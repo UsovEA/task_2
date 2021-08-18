@@ -3,8 +3,8 @@
 const todoList = document.getElementById("list");
 const doneList = document.getElementById("donelist");
 
-let todo = [];
-let todoDone = [];
+const todoDone = [];
+const todo = [];
 
 const saveList = () => {
   const localTodo = JSON.stringify(todo);
@@ -18,8 +18,8 @@ const getList = () => {
   const localTodo = localStorage.getItem("todo");
   const localTodoDone = localStorage.getItem("todoDone");
 
-  todo = localTodo ? JSON.parse(localTodo) : [];
-  todoDone = localTodoDone ? JSON.parse(localTodoDone) : [];
+  localTodo && todo.push(...JSON.parse(localTodo));
+  localTodoDone && todoDone.push(...JSON.parse(localTodoDone));
 };
 
 const displayTitle = () => {
@@ -35,23 +35,17 @@ const onChangeHandler = (e) => {
   const value = parent.childNodes[2].innerHTML;
   const listId = parent.parentElement.id;
   const itemIndex = [...parent.parentNode.children].indexOf(parent);
+  const isTodoList = todoList.id === listId;
+  const currentList = isTodoList ? todoList : doneList;
+  const secondaryList = !isTodoList ? todoList : doneList;
+  const currentArray = isTodoList ? todo : todoDone;
+  const secondaryArray = !isTodoList ? todo : todoDone;
 
-  console.log(todoList);
-  console.log(doneList);
+  currentList.removeChild(parent);
+  secondaryList.appendChild(parent);
 
-  if (todoList.id === listId) {
-    todoList.removeChild(parent);
-    doneList.appendChild(parent);
-
-    todo = todo.filter((item, index) => index !== itemIndex);
-    todoDone.push(value);
-  } else {
-    doneList.removeChild(parent);
-    todoList.appendChild(parent);
-
-    todo.push(value);
-    todoDone = todoDone.filter((item, index) => index !== itemIndex);
-  }
+  currentArray.splice(itemIndex, 1);
+  secondaryArray.push(value);
 
   saveList();
   displayTitle();
@@ -62,14 +56,12 @@ const onClickHandler = (e) => {
   const parent = e.target.parentElement;
   const listId = parent.parentElement.id;
   const itemIndex = [...parent.parentNode.children].indexOf(parent);
+  const isTodoList = todoList.id === listId;
+  const currentList = isTodoList ? todoList : doneList;
+  const currentArray = isTodoList ? todo : todoDone;
 
-  if (todoList.id === listId) {
-    todoList.removeChild(parent);
-    todo = todo.filter((item, index) => index !== itemIndex);
-  } else {
-    doneList.removeChild(parent);
-    todoDone = todoDone.filter((item, index) => index !== itemIndex);
-  }
+  currentList.removeChild(parent);
+  currentArray.splice(itemIndex, 1);
 
   saveList();
   displayTitle();
@@ -83,14 +75,11 @@ const onOkButtonClickHandler = (e) => {
   const value = form.childNodes[0].value;
   const listId = parent.parentElement.id;
   const itemIndex = [...parent.parentNode.children].indexOf(parent);
+  const isTodoList = todoList.id === listId;
+  const currentArray = isTodoList ? todo : todoDone;
 
   todoItem.removeChild(form);
-
-  if (todoList.id === listId) {
-    todo[itemIndex] = value;
-  } else {
-    todoDone[itemIndex] = value;
-  }
+  currentArray[itemIndex] = value;
 
   todoItem.innerHTML = value;
 
@@ -177,15 +166,14 @@ const onEnterClickHandler = ({ keyCode }) =>
 
 const removeList = (id) => {
   const root = document.getElementById(id);
+  const isTodoList = todoList.id === id;
+  const currentArray = isTodoList ? todo : todoDone;
+
   while (root.lastChild) {
     root.removeChild(document.getElementById(id).lastChild);
   }
 
-  if (todoList.id === id) {
-    todo.length = 0;
-  } else {
-    todoDone.length = 0;
-  }
+  currentArray.length = 0;
 
   saveList();
   displayTitle();
