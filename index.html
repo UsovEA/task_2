@@ -15,7 +15,7 @@
 <h1 id="headline">To Do List</h1>
 </div>
 <div class="col-sm-2 col-xs-2">
-	<h3 class="glyphicon glyphicon-trash" onclick="remove_list('list')"></h3>
+	<h3 class="glyphicon glyphicon-trash" onclick="removeList('list')"></h3>
 </div>
 </div>
 <hr>
@@ -25,7 +25,7 @@
 	
 </ul>
 <h3 id="noitem"> No Items in the list. </h3>
-<input type="text" id="itemname" placeholder="Type Item Name and hit Enter" onkeypress="additem_whenenter(event)" />
+<input type="text" id="itemname" placeholder="Type Item Name and hit Enter" onkeypress="onEnterClickHandler(event)" />
 </div>
 </section>
 <section class="donelist">
@@ -37,7 +37,7 @@
 
 </div>
 <div class="col-sm-2 col-xs-2">
-	<h3 class="glyphicon glyphicon-trash" onclick="remove_list('donelist')"></h3>
+	<h3 class="glyphicon glyphicon-trash" onclick="removeList('donelist')"></h3>
 </div>
 </div>
 
