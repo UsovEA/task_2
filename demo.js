@@ -1,265 +1,190 @@
-var myList = document.getElementById("list");
-var doneList = document.getElementById("donelist");
+"use strict";
 
-var todo = [];
-var todone = [];
+const todoList = document.getElementById("list");
+const doneList = document.getElementById("donelist");
 
+const todoDone = [];
+const todo = [];
 
-var temp;
-var count = 0, countDone = 0, x = 0, y = 0;
-var flag = true;
+const saveList = () => {
+  const localTodo = JSON.stringify(todo);
+  const localTodoDone = JSON.stringify(todoDone);
 
-function save_count() {
-    var localCount = count;
-    var localCountDone = countDone;
-    localStorage.setItem("count", localCount);
-    localStorage.setItem("countDone", localCountDone);
-}
+  localStorage.setItem("todo", localTodo);
+  localStorage.setItem("todoDone", localTodoDone);
+};
 
-function get_count() {
-    var localCount = localStorage.getItem("count");
-    var localCountDone = localStorage.getItem("countDone");
-    count = localCount;
-    countDone = localCountDone;
-}
+const getList = () => {
+  const localTodo = localStorage.getItem("todo");
+  const localTodoDone = localStorage.getItem("todoDone");
 
+  localTodo && todo.push(...JSON.parse(localTodo));
+  localTodoDone && todoDone.push(...JSON.parse(localTodoDone));
+};
 
-function save_list() {
-    var str = JSON.stringify(todo);
-    var str1 = JSON.stringify(todone);
-    localStorage.setItem("todo", str);
-    localStorage.setItem("todone", str1);
+const displayTitle = () => {
+  document.getElementById("noitem").style.display =
+    todo.length > 0 ? "none" : "block";
+  document.getElementById("doneitem").style.display =
+    todoDone.length > 0 ? "none" : "block";
+};
 
-}
+const onChangeHandler = (e) => {
+  // С индексами не уверен, по условиям задачи говорится что полностью не переписывать, по хорошему наверно стоило бы сделать обьект с уникальными id и уже по ним фильровать
+  const parent = e.target.parentElement;
+  const value = parent.childNodes[2].innerHTML;
+  const listId = parent.parentElement.id;
+  const itemIndex = [...parent.parentNode.children].indexOf(parent);
+  const isTodoList = todoList.id === listId;
+  const currentList = isTodoList ? todoList : doneList;
+  const secondaryList = !isTodoList ? todoList : doneList;
+  const currentArray = isTodoList ? todo : todoDone;
+  const secondaryArray = !isTodoList ? todo : todoDone;
 
-function get_list() {
-    var str = localStorage.getItem("todo");
-    var str1 = localStorage.getItem("todone");
+  currentList.removeChild(parent);
+  secondaryList.appendChild(parent);
 
-    todo = JSON.parse(str);
-    todone = JSON.parse(str1);
-    if (!todo) {
-        todo = [];
-    }
-    if (!todone) {
-        todone = [];
-    }
+  currentArray.splice(itemIndex, 1);
+  secondaryArray.push(value);
 
-    console.log(todo);
-    console.log(todone);
+  saveList();
+  displayTitle();
+};
 
-}
-get_count();
-get_list();
-var todoCount = count;
-var todoneCount = countDone;
+const onClickHandler = (e) => {
+  // С индексами не уверен, по условиям задачи говорится что полностью не переписывать, по хорошему наверно стоило бы сделать обьект с уникальными id и уже по ним фильровать
+  const parent = e.target.parentElement;
+  const listId = parent.parentElement.id;
+  const itemIndex = [...parent.parentNode.children].indexOf(parent);
+  const isTodoList = todoList.id === listId;
+  const currentList = isTodoList ? todoList : doneList;
+  const currentArray = isTodoList ? todo : todoDone;
 
-while (todoCount > 0) {
-    additem_todo('todo');
-    --todoCount;
-}
+  currentList.removeChild(parent);
+  currentArray.splice(itemIndex, 1);
 
-while (todoneCount > 0) {
-    additem_todo('todone');
-    --todoneCount;
-}
+  saveList();
+  displayTitle();
+};
 
-function additem_whenenter(e) {
-    if (e.keyCode === 13) {
-        additem_todo('new');
-    }
-}
+const onOkButtonClickHandler = (e) => {
+  // С индексами не уверен, по условиям задачи говорится что полностью не переписывать, по хорошему наверно стоило бы сделать обьект с уникальными id и уже по ним фильровать
+  const form = e.target.parentElement;
+  const todoItem = form.parentElement;
+  const parent = todoItem.parentElement;
+  const value = form.childNodes[0].value;
+  const listId = parent.parentElement.id;
+  const itemIndex = [...parent.parentNode.children].indexOf(parent);
+  const isTodoList = todoList.id === listId;
+  const currentArray = isTodoList ? todo : todoDone;
 
-function additem_todo(flag) {
-    var item = document.createElement("li");
-    var span = document.createElement("span");
-    var check = document.createElement("input");
-    var spanimg = document.createElement("span");
-    item.appendChild(check);
+  todoItem.removeChild(form);
+  currentArray[itemIndex] = value;
 
-    item.appendChild(spanimg);
-    item.appendChild(span);
+  todoItem.innerHTML = value;
 
-    check.setAttribute('type', 'checkbox');
-    check.classList.add("check-item");
-    span.classList.add("list-item");
-    spanimg.classList.add("glyphicon");
-    spanimg.classList.add("glyphicon-remove");
+  saveList();
+};
 
-    if (flag == 'todo') {
-        var itemContent = todo[x];
-        span.innerHTML = itemContent;
-        myList.appendChild(item);
-        x++;
-        document.getElementById("noitem").style.display = "none";
+const onCancelButtonClickHandler = (e, value) => {
+  const form = e.target.parentElement;
+  const todoItem = form.parentElement;
 
+  todoItem.innerHTML = value;
+};
 
-    }
-    else if (flag == 'todone') {
-        check.checked = true;
-        var itemContent = todone[y];
-        span.innerHTML = itemContent;
-        doneList.appendChild(item);
-        y++;
-        document.getElementById("doneitem").style.display = "none";
+const onDblClickHandler = (e) => {
+  const todoItem = e.target;
+  const value = e.target.innerHTML;
 
+  todoItem.innerHTML = "";
 
-    }
-    else {
-        var itemContent = document.getElementById("itemname");
-        todo.push(itemContent.value);
-        save_list();
-        span.innerHTML = itemContent.value;
-        myList.appendChild(item);
-        itemContent.value = "";
-        count++;
-        save_count();
-        display_title();
-    }
+  const form = document.createElement("span");
+  const text = document.createElement("input");
+  const ok = document.createElement("button");
+  const cancel = document.createElement("button");
 
+  text.value = value;
+  ok.innerHTML = "OK";
+  cancel.innerHTML = "Cancel";
 
-    check.addEventListener("change", function () {
+  form.appendChild(text);
+  form.appendChild(ok);
+  form.appendChild(cancel);
+  todoItem.appendChild(form);
 
-        var doneItem = this.parentElement;
-        temp = doneItem.childNodes[2].innerHTML;
-        if (myList.id == this.parentElement.parentElement.id) {
-            myList.removeChild(doneItem);
-            span.innerHTML = temp;
-            doneList.appendChild(item);
-            count--;
-            countDone++;
-            todone.push(temp);
-            for (var i = 0; i < todo.length; i++) {
-                if (temp == todo[i])
-                    todo.splice(i, 1);
-            }
-        }
-        else {
-            doneList.removeChild(doneItem);
-            span.innerHTML = temp;
-            myList.appendChild(item);
-            count++;
-            countDone--;
-            todo.push(temp);
-            for (var i = 0; i < todone.length; i++) {
-                if (temp == todone[i])
-                    todone.splice(i, 1);
-            }
-        }
-        save_list();
-        save_count();
-        display_title();
+  ok.addEventListener("click", onOkButtonClickHandler);
+  cancel.addEventListener("click", (e) => onCancelButtonClickHandler(e, value));
+};
 
-        spanimg.addEventListener("click", function () {
+const addTodoItem = (flag = "new", todoItem = null) => {
+  const item = document.createElement("li");
+  const span = document.createElement("span");
+  const check = document.createElement("input");
+  const removeIco = document.createElement("span");
 
-            var removeItem = this.parentElement;
-            temp = removeItem.childNodes[2].innerHTML;
+  item.appendChild(check);
+  item.appendChild(removeIco);
+  item.appendChild(span);
 
-            if (myList.id == this.parentElement.parentElement.id) {
-                myList.removeChild(removeItem);
-                count--;
-                for (var i = 0; i < todo.length; i++) {
-                    if (temp == todo[i])
-                        todo.splice(i, 1);
-                }
+  check.setAttribute("type", "checkbox");
+  check.classList.add("check-item");
+  span.classList.add("list-item");
+  removeIco.classList.add("glyphicon");
+  removeIco.classList.add("glyphicon-remove");
 
-            }
-            else {
-                doneList.removeChild(removeItem);
-                countDone--;
-                for (var i = 0; i < todone.length; i++) {
-                    if (temp = todone[i])
-                        todone.splice(i, 1);
-                }
-            }
-            save_list();
-            save_count();
-            display_title();
+  if (todoItem) span.innerHTML = todoItem;
 
-        });
+  if (flag === "todo") {
+    todoList.appendChild(item);
+  } else if (flag === "todoDone") {
+    check.checked = true;
 
-        span.addEventListener("dblclick", function () {
+    doneList.appendChild(item);
+  } else {
+    const itemContent = document.getElementById("itemname");
+    const value = itemContent.value;
 
-            var data = this.innerHTML;
-            var parent = this.parentElement;
-            span.innerHTML = "";
-            var form = document.createElement("span");
-            var text = document.createElement("input");
-            var ok = document.createElement("button");
-            var cancel = document.createElement("button");
+    span.innerHTML = value;
 
-            text.value = data;
-            ok.innerHTML = "OK";
-            cancel.innerHTML = "Cancel";
+    todoList.appendChild(item);
+    todo.push(value);
 
-            form.appendChild(text);
-            form.appendChild(ok);
-            form.appendChild(cancel);
-            span.appendChild(form);
+    itemContent.value = "";
+  }
 
-            ok.addEventListener("click", function () {
-                span.removeChild(form);
+  check.addEventListener("change", onChangeHandler);
+  removeIco.addEventListener("click", onClickHandler);
+  span.addEventListener("dblclick", onDblClickHandler);
 
-                for (var i = 0; i < todo.length; i++) {
-                    if (data == todo[i]) {
-                        todo[i] = text.value;
-                    }
+  saveList();
+  displayTitle();
+};
 
-                }
+const onEnterClickHandler = ({ keyCode }) =>
+  keyCode === 13 && addTodoItem("new");
 
-                for (var i = 0; i < todone.length; i++) {
-                    if (data == todone[i]) {
-                        todone[i] = text.value;
-                    }
-                }
-                save_list();
-                data = text.value;
-                span.innerHTML = data;
-                parent.appendChild(span);
-            });
+const removeList = (id) => {
+  const root = document.getElementById(id);
+  const isTodoList = todoList.id === id;
+  const currentArray = isTodoList ? todo : todoDone;
 
-            cancel.addEventListener("click", function () {
-                span.removeChild(form);
-                span.innerHTML = data;
-                parent.appendChild(span);
-            });
-        });
-    }
+  while (root.lastChild) {
+    root.removeChild(document.getElementById(id).lastChild);
+  }
 
-    function display_title() {
+  currentArray.length = 0;
 
-        if (count == 0) {
-            document.getElementById("noitem").style.display = "block";
-        }
-        if (count == 1) {
-            document.getElementById("noitem").style.display = "none";
-        }
-        if (countDone == 0) {
-            document.getElementById("doneitem").style.display = "block";
-        }
-        if (countDone == 1) {
-            document.getElementById("doneitem").style.display = "none";
-        }
+  saveList();
+  displayTitle();
+};
 
-    }
-    function remove_list(id) {
-        var root = document.getElementById(id);
-        while (root.firstChild) {
-            root.removeChild(document.getElementById(id).firstChild);
+getList();
 
-        }
+todo.forEach((item) => {
+  addTodoItem("todo", item);
+});
 
-
-        if (myList.id == id) {
-            todo = [];
-            count = 0;
-        }
-        else {
-            todone = [];
-            countDone = 0;
-        }
-        save_list();
-        save_count();
-        display_title();
-
-    }
+todoDone.forEach((item) => {
+  addTodoItem("todoDone", item);
+});
